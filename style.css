@@ -1,0 +1,39 @@
+
+:root{--bg:#0b0f1a;--panel:#111827;--text:#E5E7EB;--muted:#9CA3AF;--brand1:#6C63FF;--brand2:#00C2FF;--chip:#1f2937}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background: radial-gradient(1200px 600px at 20% -10%, rgba(108,99,255,.25), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(0,194,255,.18), transparent 60%), var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px 28px;backdrop-filter: blur(10px);background: rgba(11,15,26,.55);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav a{margin:0 10px;color:var(--muted);font-weight:600}.nav a:hover{color:#fff}.brand{color:#fff;font-weight:800;letter-spacing:.3px}
+.hero{position:relative;min-height:78vh;display:grid;place-items:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.95) contrast(1.05)}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(11,15,26,.55) 0%, rgba(11,15,26,.85) 70%)}
+.hero-content{position:relative;padding:0 24px;text-align:center;max-width:1100px;animation:fadeIn .8s ease both}
+.eyebrow{letter-spacing:.35em;color:var(--muted);font-weight:700;font-size:.8rem}
+h1{font-size:clamp(2rem, 4.8vw, 3.6rem);margin:.4rem 0 1rem;line-height:1.15}
+.glow{background:linear-gradient(90deg,#fff,#c3d9ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px rgba(108,99,255,.3)}
+.sub{max-width:850px;margin:0 auto 16px;color:#cbd5e1}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0 26px}
+.chip{padding:8px 14px;border-radius:999px;background:var(--chip);color:#c7d2fe;border:1px solid rgba(255,255,255,.06);transition:all .2s}
+.chip:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,99,255,.18), inset 0 0 0 1px rgba(108,99,255,.4)}
+.cta{display:inline-block;padding:12px 22px;border-radius:12px;font-weight:800;letter-spacing:.4px;background:linear-gradient(90deg,var(--brand1),var(--brand2));color:#0b1020;box-shadow:0 12px 30px rgba(0,194,255,.25);transition:transform .15s ease, box-shadow .15s ease}
+.cta:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,194,255,.35)}
+.section{max-width:1100px;margin:60px auto;padding:0 24px}
+.section h2{font-size:1.8rem;margin-bottom:16px}
+.grid-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.tile{padding:18px 16px;border-radius:14px;background:var(--panel);border:1px solid rgba(255,255,255,.06);text-align:center;transition:all .2s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(108,99,255,.18)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{padding:18px;border-radius:16px;background:var(--panel);border:1px solid rgba(255,255,255,.06);transition:all .2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,194,255,.2)}.card.link{cursor:pointer}
+.certs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.cert{display:flex;gap:14px;align-items:center;padding:14px;border-radius:16px;background:var(--panel);border:1px solid rgba(255,255,255,.06)}
+.cert img{width:72px;height:72px;border-radius:12px;background:#0b0f1a}
+.cert h4{margin:0 0 4px}.hint{color:var(--muted);font-size:.9rem}
+.socials{display:flex;flex-wrap:wrap;gap:12px}
+.social{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,.06);transition:all .2s}
+.social:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,194,255,.2)}
+.social img{width:18px;height:18px}
+.footer{padding:26px 16px;text-align:center;color:var(--muted)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (max-width:640px){.nav{padding:12px 16px}.nav nav a{display:none}}
