@@ -1,4 +1,4 @@
-# Sanjay CloudOps Portfolio (Static)
+# Sanjay CloudOps Portfolio
 
 Dark, animated portfolio with a hero background image.
 
