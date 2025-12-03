@@ -1,9 +1,5 @@
-FROM nginx:1.27-alpine
-
-RUN rm -rf /usr/share/nginx/html/*
+FROM nginx:alpine
 
 COPY . /usr/share/nginx/html
 
-EXPOSE 8080
-
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 80
