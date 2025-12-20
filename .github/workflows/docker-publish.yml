@@ -1,42 +1,70 @@
-name: Build and Push Docker Image
+name: Build, Push Image & Update GitOps Repo
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: sanjaykhambam/sanjay-portfolio
+
     steps:
-    - name: Checkout code
+    # 1️⃣ Checkout application repo
+    - name: Checkout application repo
       uses: actions/checkout@v4
 
+    # 2️⃣ Generate version tag from Git SHA
     - name: Set image tag
-      run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV  
+      run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+    # 3️⃣ Docker setup
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    # 4️⃣ Login to Docker Hub
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push multi-arch image
+    # 5️⃣ Build & push image
+    - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
-        tags:  |
-          sanjaykhambam/sanjay-portfolio:${{ env.IMAGE_TAG }}
-          sanjaykhambam/sanjay-portfolio:latest
+        tags: |
+          ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-    - name: Logout Docker Hub
-      run: docker logout
+    # 6️⃣ Checkout GitOps repo
+    - name: Checkout GitOps repo
+      uses: actions/checkout@v4
+      with:
+        repository: sanjay-k598/homelab-gitops
+        token: ${{ secrets.GITOPS_REPO_TOKEN }}
+        path: gitops
+
+    # 7️⃣ Update image tag in Kubernetes manifest
+    - name: Update image tag in GitOps repo
+      run: |
+        sed -i "s|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|" \
+        gitops/apps/portfolio/deployment.yaml
+
+    # 8️⃣ Commit & push GitOps change
+    - name: Commit and push GitOps update
+      run: |
+        cd gitops
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add apps/portfolio/deployment.yaml
+        git commit -m "chore(gitops): deploy image $IMAGE_TAG"
+        git push
