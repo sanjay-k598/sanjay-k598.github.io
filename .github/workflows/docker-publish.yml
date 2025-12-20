@@ -12,6 +12,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set image tag
+      run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV  
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -31,7 +34,9 @@ jobs:
         file: ./Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: sanjaykhambam/sanjay-portfolio:latest
+        tags:  |
+          sanjaykhambam/sanjay-portfolio:${{ env.IMAGE_TAG }}
+          sanjaykhambam/sanjay-portfolio:latest
 
     - name: Logout Docker Hub
       run: docker logout
