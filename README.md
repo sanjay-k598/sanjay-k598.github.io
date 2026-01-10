@@ -2,7 +2,7 @@
 
 Dark, animated portfolio with a hero background image.
 
-**Architecture & Tools Used:** Built using **HTML, CSS, and JavaScript**, hosted on **GitHub Pages**, and automatically deployable via **GitHub Actions** and ArgoCD for fully automatic deployment following DevOps automation principles.
+**Architecture & Tools Used:** Built using **HTML, CSS, and JavaScript**, hosted on **GitHub Pages**, and automatically built and containarized using Docker and push the Docker image to Dockerhub with image tag **GitHub Actions** and I used ArgoCD for fully automatic deployment of the same image to my Kubernetes Homelab cluster following DevOps automation principles.
 
 ## Deploy
 1. Use the repository `sanjay-k598.github.io`.
