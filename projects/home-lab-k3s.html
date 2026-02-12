@@ -1,233 +1,208 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Kubernetes Homelab (k3s) | Sanjay Khambam</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kubernetes Homelab (k3s) | Sanjay Khambam</title>
 
-<link rel="stylesheet" href="../style.css" />
+  <!-- Reuse your main CSS -->
+  <link rel="stylesheet" href="../style.css" />
 
-<style>
-.page { max-width: 980px; margin: 0 auto; padding: 24px; }
-.crumbs { margin-bottom: 16px; }
-.crumbs a { text-decoration: none; }
-
-.meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 24px; }
-.tag { border: 1px solid #444; border-radius: 999px; padding: 4px 10px; font-size: 14px; }
-
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-
-@media (max-width: 860px) {
-  .grid2, .grid3 { grid-template-columns: 1fr; }
-}
-
-.img {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid #333;
-}
-
-pre {
-  overflow: auto;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #333;
-}
-
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
-details {
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-
-details summary {
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.callout {
-  border-left: 4px solid #666;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 10px;
-}
-
-/* -------- FULL WIDTH DIAGRAM SECTION -------- */
-
-.diagram-section {
-  margin: 70px 0;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw;
-  padding: 60px 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.55));
-}
-
-.diagram-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 40px;
-}
-
-.diagram-full {
-  width: 100%;
-  height: auto;
-  border-radius: 18px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.08);
-  animation: fadeIn 0.8s ease-out;
-}
-
-.diagram-caption {
-  text-align: center;
-  margin-top: 18px;
-  opacity: 0.7;
-  font-size: 14px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* subtle pulse highlight */
-.diagram-wrapper::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 8px;
-  bottom: 40px;
-  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-  opacity: 0.25;
-  animation: pulse 3s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.15; }
-  50% { opacity: 0.4; }
-  100% { opacity: 0.15; }
-}
-</style>
+  <style>
+    /* Small page-only helpers if you need them */
+    .page { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .crumbs { margin-bottom: 16px; }
+    .crumbs a { text-decoration: none; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 24px; }
+    .tag { border: 1px solid #444; border-radius: 999px; padding: 4px 10px; font-size: 14px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+    .img { width: 100%; border-radius: 12px; border: 1px solid #333; }
+    pre { overflow: auto; padding: 14px; border-radius: 12px; border: 1px solid #333; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    details { border: 1px solid #333; border-radius: 12px; padding: 12px 14px; }
+    details summary { cursor: pointer; font-weight: 600; }
+    .callout { border-left: 4px solid #666; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+  </style>
 </head>
 
 <body>
-<main class="page">
+  <main class="page">
+    <div class="crumbs">
+      <a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / Kubernetes Homelab (k3s)
+    </div>
 
-<div class="crumbs">
-  <a href="../index.html">Home</a> /
-  <a href="../index.html#projects">Projects</a> /
-  Kubernetes Homelab (k3s)
-</div>
-
-<h1>My Kubernetes Homelab Setup</h1>
-
-<p>
-This page documents my Kubernetes homelab setup end to end: hardware, networking,
-cluster bootstrap, GitOps workflows, and the workloads I run.
-The goal was to simulate production-style patterns in a small controlled environment :)
-</p>
-
-<h2>1) Architecture overview</h2>
-
-<div class="grid2">
-  <div>
-    <p class="callout">
-      Goal: reproducible cluster setup using GitOps.
-      All workloads are deployed from Git, not manually applied.
+    <h1>My Kubernetes Homelab Setup</h1>
+    <p>
+      This page documents my Kubernetes homelab setup end to end: hardware, network, cluster bootstrap,
+      GitOps workflows, and the apps I run. I built it to practice production patterns in a small environment.
     </p>
 
+
+    <h2>1) Architecture overview</h2>
+    <div class="grid2">
+      <div>
+        <p class="callout">
+          Goal: reproducible cluster setup with GitOps.
+          All workloads are deployed from Git, not by clicking in UIs.
+        </p>
+        <ul>
+          <li><strong>Cluster:</strong> k3s multi-node</li>
+          <li><strong>GitOps:</strong> Argo CD</li>
+          <li><strong>Ingress:</strong> Traefik</li>
+          <li><strong>Certs:</strong> cert-manager</li>
+          <li><strong>Storage:</strong> local-path</li>
+          <li><strong>Observability:</strong> Prometheus & Grafana stack</li>
+        </ul>
+      </div>
+      <div>
+        <img class="img" src="../projects/assests/architecture.png" alt="Homelab architecture diagram" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Diagram: traffic flow and core components.</p>
+      </div>
+    </div>
+
+    <h2>2) Hardware</h2>
+    <div class="grid3">
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/rack-front.jpg" alt="Rack or setup photo" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Rack / layout</p>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/node-1.jpg" alt="Node 1" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Node 1</p>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/node-2.jpg" alt="Node 2" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Node 2</p>
+      </div>
+    </div>
+
+    <details style="margin-top:12px;">
+      <summary>Node inventory (example format)</summary>
+      <pre><code>Control plane:
+- node-cp-1: CPU, RAM, Disk, OS
+
+Workers:
+- node-w-1: CPU, RAM, Disk, OS
+- node-w-2: CPU, RAM, Disk, OS
+
+Network:
+- Router/firewall:
+- Switch:
+- DNS:</code></pre>
+    </details>
+
+    <h2>3) Network and DNS</h2>
     <ul>
-      <li><strong>Cluster:</strong> k3s multi-node on Dell servers</li>
-      <li><strong>GitOps:</strong> Argo CD</li>
-      <li><strong>Ingress:</strong> Traefik</li>
-      <li><strong>Load Balancer:</strong> MetalLB</li>
-      <li><strong>TLS:</strong> cert-manager + Let's Encrypt</li>
-      <li><strong>Storage:</strong> local-path</li>
-      <li><strong>Observability:</strong> Prometheus & Grafana</li>
+      <li><strong>LAN:</strong> (your subnet)</li>
+      <li><strong>DNS:</strong> (Pi-hole / router / etc)</li>
+      <li><strong>Ingress IP:</strong> (MetalLB VIP or nodePort/hostNetwork)</li>
+      <li><strong>Domains:</strong> (example: *.home.yourdomain.com)</li>
     </ul>
-  </div>
-</div>
 
-</main>
+    <h2>4) Cluster bootstrap (k3s)</h2>
+    <p>High level steps I followed:</p>
+    <ol>
+      <li>Prep OS and dependencies on all nodes</li>
+      <li>Install k3s server (control plane)</li>
+      <li>Join worker nodes with token</li>
+      <li>Confirm node readiness and core system pods</li>
+    </ol>
 
-<!-- FULL WIDTH DIAGRAM -->
+    <details>
+      <summary>Commands (example placeholders)</summary>
+      <pre><code># Control plane
+curl -sfL https://get.k3s.io | sh -
 
-<section class="diagram-section">
-  <div class="diagram-wrapper">
-    <img
-      src="../projects/assests/architecture.png"
-      alt="Kubernetes Homelab Architecture Diagram"
-      class="diagram-full" />
-  </div>
-  <p class="diagram-caption">
-    End-to-end request flow: User → Router → MetalLB → Traefik → k3s cluster → Applications.  
-    GitOps sync: Argo CD continuously reconciles cluster state from Git.
-  </p>
-</section>
+# Get node token
+sudo cat /var/lib/rancher/k3s/server/node-token
 
-<main class="page">
+# Worker
+curl -sfL https://get.k3s.io | K3S_URL="https://&lt;cp-ip&gt;:6443" K3S_TOKEN="&lt;token&gt;" sh -
 
-<h2>2) Hardware</h2>
+# Verify
+kubectl get nodes -o wide
+kubectl get pods -A</code></pre>
+    </details>
 
-<div class="grid3">
-  <div>
-    <img class="img" src="../assets/projects/homelab-k3s/img/rack-front.jpg" />
-    <p style="opacity:0.8;font-size:14px;margin-top:8px;">Rack layout</p>
-  </div>
-  <div>
-    <img class="img" src="../assets/projects/homelab-k3s/img/node-1.jpg" />
-    <p style="opacity:0.8;font-size:14px;margin-top:8px;">Control Plane Node</p>
-  </div>
-  <div>
-    <img class="img" src="../assets/projects/homelab-k3s/img/node-2.jpg" />
-    <p style="opacity:0.8;font-size:14px;margin-top:8px;">Worker Node</p>
-  </div>
-</div>
+    <h2>5) GitOps with Argo CD</h2>
+    <p>
+      I use Argo CD as the deployment control plane. The cluster state matches Git.
+    </p>
 
-<h2>3) Network</h2>
-<ul>
-  <li><strong>Router/Firewall:</strong> MikroTik</li>
-  <li><strong>Load Balancer:</strong> MetalLB (Layer 2 mode)</li>
-  <li><strong>Ingress IP:</strong> Dedicated LAN VIP</li>
-  <li><strong>Domain:</strong> Internal wildcard domain mapped to cluster VIP</li>
-</ul>
+    <div class="grid2">
+      <div>
+        <ul>
+          <li>App of Apps pattern (optional)</li>
+          <li>Per-namespace app grouping</li>
+          <li>Automated sync for safe workloads</li>
+        </ul>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/screenshots/argocd-apps.png" alt="Argo CD apps view" />
+      </div>
+    </div>
 
-<h2>4) GitOps Workflow</h2>
-<ul>
-  <li>Git repository stores all manifests</li>
-  <li>Argo CD watches and auto-syncs changes</li>
-  <li>Declarative cluster state maintained</li>
-</ul>
+    <details style="margin-top:12px;">
+      <summary>Repo structure (recommended)</summary>
+      <pre><code>homelab-gitops/
+  clusters/
+    home/
+      apps/
+        argocd/
+        ingress/
+        cert-manager/
+        monitoring/
+        apps/
+      bootstrap/
+  charts/
+  README.md</code></pre>
+    </details>
 
-<h2>5) Observability</h2>
-<ul>
-  <li>Prometheus for metrics collection</li>
-  <li>Grafana dashboards for visualization</li>
-  <li>Node and pod-level monitoring enabled</li>
-</ul>
+    <h2>6) Core add-ons</h2>
+    <ul>
+      <li><strong>Ingress:</strong> what you chose and why</li>
+      <li><strong>TLS:</strong> cert-manager setup and issuers</li>
+      <li><strong>Storage:</strong> storage class, backups, restore plan</li>
+      <li><strong>Secrets:</strong> how you handle secrets (be careful what you publish)</li>
+      <li><strong>Observability:</strong> dashboards and alerting basics</li>
+    </ul>
 
-<h2>6) Lessons Learned</h2>
-<ul>
-  <li>GitOps eliminates configuration drift</li>
-  <li>MetalLB simplifies bare-metal load balancing</li>
-  <li>Ingress separation keeps routing clean</li>
-  <li>Observability is critical even in small clusters</li>
-</ul>
+    <h2>7) Step-by-step runbook</h2>
+    <p>
+      This is the exact sequence I would follow to rebuild the cluster from scratch.
+      Keep it short and repeatable.
+    </p>
 
-<p style="margin-top:28px;">
-  <a href="../index.html#projects">Back to Projects</a>
-</p>
+    <ol>
+      <li>Provision nodes, update OS, set hostnames</li>
+      <li>Install k3s control plane</li>
+      <li>Join workers</li>
+      <li>Install Argo CD</li>
+      <li>Point Argo CD to GitOps repo</li>
+      <li>Install ingress, storage, cert-manager</li>
+      <li>Deploy apps</li>
+      <li>Validate and document URLs</li>
+    </ol>
 
-</main>
+    <h2>8) Screenshots and proof</h2>
+    <div class="grid2">
+      <img class="img" src="../assets/projects/homelab-k3s/screenshots/kubectl-nodes.png" alt="kubectl get nodes" />
+      <img class="img" src="../assets/projects/homelab-k3s/screenshots/ingress.png" alt="Ingress working" />
+    </div>
+
+    <h2>9) Lessons learned</h2>
+    <ul>
+      <li>What broke and how you fixed it</li>
+      <li>What you would change in v2</li>
+      <li>What this taught you that maps to real production</li>
+    </ul>
+
+    <p style="margin-top:28px;">
+      <a href="../index.html#projects">Back to Projects</a>
+    </p>
+  </main>
 </body>
 </html>
