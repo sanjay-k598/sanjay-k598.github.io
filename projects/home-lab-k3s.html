@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kubernetes Homelab (k3s) | Sanjay Khambam</title>
+
+  <!-- Reuse your main CSS -->
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    /* Small page-only helpers if you need them */
+    .page { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .crumbs { margin-bottom: 16px; }
+    .crumbs a { text-decoration: none; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 24px; }
+    .tag { border: 1px solid #444; border-radius: 999px; padding: 4px 10px; font-size: 14px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+    .img { width: 100%; border-radius: 12px; border: 1px solid #333; }
+    pre { overflow: auto; padding: 14px; border-radius: 12px; border: 1px solid #333; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    details { border: 1px solid #333; border-radius: 12px; padding: 12px 14px; }
+    details summary { cursor: pointer; font-weight: 600; }
+    .callout { border-left: 4px solid #666; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="crumbs">
+      <a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / Kubernetes Homelab (k3s)
+    </div>
+
+    <h1>Kubernetes Homelab (k3s)</h1>
+    <p>
+      This page documents my Kubernetes homelab setup end to end: hardware, network, cluster bootstrap,
+      GitOps workflows, and the apps I run. I built it to practice production patterns in a small environment.
+    </p>
+
+    <div class="meta">
+      <span class="tag">k3s</span>
+      <span class="tag">Argo CD</span>
+      <span class="tag">GitOps</span>
+      <span class="tag">Ingress</span>
+      <span class="tag">Observability</span>
+      <span class="tag">TLS</span>
+    </div>
+
+    <h2>1) Architecture overview</h2>
+    <div class="grid2">
+      <div>
+        <p class="callout">
+          Goal: reproducible cluster setup with GitOps.
+          All workloads are deployed from Git, not by clicking in UIs.
+        </p>
+        <ul>
+          <li><strong>Cluster:</strong> k3s multi-node</li>
+          <li><strong>GitOps:</strong> Argo CD</li>
+          <li><strong>Ingress:</strong> (Traefik or NGINX, whichever you use)</li>
+          <li><strong>Certs:</strong> cert-manager (optional)</li>
+          <li><strong>Storage:</strong> (Longhorn / local-path / NFS, whichever you use)</li>
+          <li><strong>Observability:</strong> (Prometheus/Grafana/Loki, if used)</li>
+        </ul>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/diagrams/architecture.png" alt="Homelab architecture diagram" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Diagram: traffic flow and core components.</p>
+      </div>
+    </div>
+
+    <h2>2) Hardware</h2>
+    <div class="grid3">
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/rack-front.jpg" alt="Rack or setup photo" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Rack / layout</p>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/node-1.jpg" alt="Node 1" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Node 1</p>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/img/node-2.jpg" alt="Node 2" />
+        <p style="opacity:0.8;font-size:14px;margin-top:8px;">Node 2</p>
+      </div>
+    </div>
+
+    <details style="margin-top:12px;">
+      <summary>Node inventory (example format)</summary>
+      <pre><code>Control plane:
+- node-cp-1: CPU, RAM, Disk, OS
+
+Workers:
+- node-w-1: CPU, RAM, Disk, OS
+- node-w-2: CPU, RAM, Disk, OS
+
+Network:
+- Router/firewall:
+- Switch:
+- DNS:</code></pre>
+    </details>
+
+    <h2>3) Network and DNS</h2>
+    <ul>
+      <li><strong>LAN:</strong> (your subnet)</li>
+      <li><strong>DNS:</strong> (Pi-hole / router / etc)</li>
+      <li><strong>Ingress IP:</strong> (MetalLB VIP or nodePort/hostNetwork)</li>
+      <li><strong>Domains:</strong> (example: *.home.yourdomain.com)</li>
+    </ul>
+
+    <h2>4) Cluster bootstrap (k3s)</h2>
+    <p>High level steps I followed:</p>
+    <ol>
+      <li>Prep OS and dependencies on all nodes</li>
+      <li>Install k3s server (control plane)</li>
+      <li>Join worker nodes with token</li>
+      <li>Confirm node readiness and core system pods</li>
+    </ol>
+
+    <details>
+      <summary>Commands (example placeholders)</summary>
+      <pre><code># Control plane
+curl -sfL https://get.k3s.io | sh -
+
+# Get node token
+sudo cat /var/lib/rancher/k3s/server/node-token
+
+# Worker
+curl -sfL https://get.k3s.io | K3S_URL="https://&lt;cp-ip&gt;:6443" K3S_TOKEN="&lt;token&gt;" sh -
+
+# Verify
+kubectl get nodes -o wide
+kubectl get pods -A</code></pre>
+    </details>
+
+    <h2>5) GitOps with Argo CD</h2>
+    <p>
+      I use Argo CD as the deployment control plane. The cluster state matches Git.
+    </p>
+
+    <div class="grid2">
+      <div>
+        <ul>
+          <li>App of Apps pattern (optional)</li>
+          <li>Per-namespace app grouping</li>
+          <li>Automated sync for safe workloads</li>
+        </ul>
+      </div>
+      <div>
+        <img class="img" src="../assets/projects/homelab-k3s/screenshots/argocd-apps.png" alt="Argo CD apps view" />
+      </div>
+    </div>
+
+    <details style="margin-top:12px;">
+      <summary>Repo structure (recommended)</summary>
+      <pre><code>homelab-gitops/
+  clusters/
+    home/
+      apps/
+        argocd/
+        ingress/
+        cert-manager/
+        monitoring/
+        apps/
+      bootstrap/
+  charts/
+  README.md</code></pre>
+    </details>
+
+    <h2>6) Core add-ons</h2>
+    <ul>
+      <li><strong>Ingress:</strong> what you chose and why</li>
+      <li><strong>TLS:</strong> cert-manager setup and issuers</li>
+      <li><strong>Storage:</strong> storage class, backups, restore plan</li>
+      <li><strong>Secrets:</strong> how you handle secrets (be careful what you publish)</li>
+      <li><strong>Observability:</strong> dashboards and alerting basics</li>
+    </ul>
+
+    <h2>7) Step-by-step runbook</h2>
+    <p>
+      This is the exact sequence I would follow to rebuild the cluster from scratch.
+      Keep it short and repeatable.
+    </p>
+
+    <ol>
+      <li>Provision nodes, update OS, set hostnames</li>
+      <li>Install k3s control plane</li>
+      <li>Join workers</li>
+      <li>Install Argo CD</li>
+      <li>Point Argo CD to GitOps repo</li>
+      <li>Install ingress, storage, cert-manager</li>
+      <li>Deploy apps</li>
+      <li>Validate and document URLs</li>
+    </ol>
+
+    <h2>8) Screenshots and proof</h2>
+    <div class="grid2">
+      <img class="img" src="../assets/projects/homelab-k3s/screenshots/kubectl-nodes.png" alt="kubectl get nodes" />
+      <img class="img" src="../assets/projects/homelab-k3s/screenshots/ingress.png" alt="Ingress working" />
+    </div>
+
+    <h2>9) Lessons learned</h2>
+    <ul>
+      <li>What broke and how you fixed it</li>
+      <li>What you would change in v2</li>
+      <li>What this taught you that maps to real production</li>
+    </ul>
+
+    <p style="margin-top:28px;">
+      <a href="../index.html#projects">Back to Projects</a>
+    </p>
+  </main>
+</body>
+</html>
